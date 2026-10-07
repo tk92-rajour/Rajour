@@ -1,0 +1,25 @@
+# systemd-enhed: starter dashboardet automatisk ved genstart.
+# Installation: se README.md → "Autostart med systemd".
+[Unit]
+Description=KPI-dashboard (internt)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=kpi
+WorkingDirectory=/opt/kpi-dashboard
+EnvironmentFile=/opt/kpi-dashboard/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/server/index.js
+Restart=always
+RestartSec=5
+# Hærdning
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/kpi-dashboard/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

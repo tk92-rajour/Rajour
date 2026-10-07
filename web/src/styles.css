@@ -1,0 +1,751 @@
+/* ==========================================================================
+   Tokens. Neutrale farver + én accentfarve. Laptop: lys (eller mørk efter OS).
+   Storskærm (.tv): altid mørk, høj kontrast, typografi skaleret efter skærmhøjde.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+  --side: #f4f5f7;
+  --flade: #ffffff;
+  --flade-2: #f8f9fa;
+  --kant: #e2e5e9;
+  --tekst: #14171c;
+  --tekst-2: #4a5260;
+  --tekst-3: #6b7380;
+  --accent: #1f5fa8;
+  --accent-svag: rgba(31, 95, 168, 0.35);
+  --accent-flade: #e8f0fa;
+  --paa-accent: #ffffff;
+  --graa-maerke: #9aa1ab;
+  --gitter: #eceef1;
+  --god: #0b7a35;
+  --daarlig: #b42318;
+  --advarsel-flade: #fff6e0;
+  --advarsel-tekst: #7a4b00;
+  --advarsel-kant: #f0d48a;
+  --fejl-flade: #fdecea;
+  --fejl-tekst: #8a1c12;
+  --skygge: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --radius: 10px;
+  font-size: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --side: #0f1115;
+    --flade: #171a20;
+    --flade-2: #1c2027;
+    --kant: #2a2f38;
+    --tekst: #f2f4f7;
+    --tekst-2: #b9c0cb;
+    --tekst-3: #8d95a3;
+    --accent: #5b9be6;
+    --accent-svag: rgba(91, 155, 230, 0.4);
+    --accent-flade: #1a2a40;
+    --paa-accent: #0b0d10;
+    --graa-maerke: #6b7380;
+    --gitter: #252a32;
+    --god: #3ccb73;
+    --daarlig: #ff7b6e;
+    --advarsel-flade: #2e2410;
+    --advarsel-tekst: #f5c96a;
+    --advarsel-kant: #5c4818;
+    --fejl-flade: #3a1714;
+    --fejl-tekst: #ffb4ab;
+    --skygge: none;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --side: #0b0d10;
+  --flade: #14171c;
+  --flade-2: #191d23;
+  --kant: #262b33;
+  --tekst: #ffffff;
+  --tekst-2: #c4cad4;
+  --tekst-3: #98a0ad;
+  --accent: #5b9be6;
+  --accent-svag: rgba(91, 155, 230, 0.4);
+  --accent-flade: #1a2a40;
+  --paa-accent: #0b0d10;
+  --graa-maerke: #6b7380;
+  --gitter: #232830;
+  --god: #3ccb73;
+  --daarlig: #ff7b6e;
+  --advarsel-flade: #2e2410;
+  --advarsel-tekst: #f5c96a;
+  --advarsel-kant: #5c4818;
+  --fejl-flade: #3a1714;
+  --fejl-tekst: #ffb4ab;
+  --skygge: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--side);
+  color: var(--tekst);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.tal-tabel {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Layout ---------- */
+
+.side {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.titel h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.titel .undertitel {
+  color: var(--tekst-3);
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+
+.handlinger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.kort-raekke {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.graf-raekke {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1200px) {
+  .kort-raekke {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .graf-raekke {
+    grid-template-columns: 1fr;
+  }
+  .kort-raekke {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .side {
+    padding: 16px 16px 32px;
+  }
+  .kort-raekke {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Periodevælger ---------- */
+
+.toggle {
+  display: inline-flex;
+  background: var(--flade);
+  border: 1px solid var(--kant);
+  border-radius: 999px;
+  padding: 3px;
+  box-shadow: var(--skygge);
+}
+
+.toggle button {
+  border: 0;
+  background: transparent;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: var(--tekst-2);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggle button:hover {
+  color: var(--tekst);
+}
+
+.toggle button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--paa-accent);
+}
+
+.toggle button:focus-visible,
+.knap:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.knap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--kant);
+  background: var(--flade);
+  color: var(--tekst-2);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--skygge);
+}
+
+.knap:hover {
+  color: var(--tekst);
+  border-color: var(--tekst-3);
+}
+
+/* ---------- Kort ---------- */
+
+.kort {
+  background: var(--flade);
+  border: 1px solid var(--kant);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--skygge);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kort-etiket {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tekst-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.periode-maerke {
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  background: var(--accent-flade);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.kort-vaerdi {
+  font-size: 2.1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-top: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  /* Højden holdes fast, selv når tallet skaleres ned for at passe i bredden. */
+  min-height: 1.15em;
+  display: flex;
+  align-items: baseline;
+}
+
+.kort-vaerdi .enhed {
+  font-size: 0.55em;
+  font-weight: 550;
+  color: var(--tekst-2);
+  margin-left: 0.15em;
+}
+
+.kort-detalje {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: var(--tekst-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.delta {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.delta.op {
+  color: var(--god);
+}
+
+.delta.ned {
+  color: var(--daarlig);
+}
+
+.delta.neutral {
+  color: var(--tekst-2);
+}
+
+.daempet {
+  color: var(--tekst-3);
+}
+
+/* ---------- Grafpaneler ---------- */
+
+.panel {
+  background: var(--flade);
+  border: 1px solid var(--kant);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--skygge);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.panel-hoved {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.panel-hoved h2 {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 1rem;
+  font-weight: 620;
+}
+
+.panel-hoved .daempet {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.graf {
+  position: relative;
+  flex: 1;
+  height: 260px;
+  min-height: 260px;
+}
+
+table.fordelingstabel {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.fordelingstabel th,
+.fordelingstabel td {
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--kant);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.fordelingstabel th:first-child,
+.fordelingstabel td:first-child {
+  text-align: left;
+  white-space: normal;
+}
+
+.fordelingstabel th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tekst-3);
+  font-weight: 600;
+}
+
+.fordelingstabel tfoot td {
+  font-weight: 650;
+  border-bottom: 0;
+}
+
+.fordelingstabel tr.ukendt td {
+  color: var(--tekst-3);
+}
+
+.fordelingstabel .soejle-kol {
+  width: 38%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.soejle-spor {
+  height: 14px;
+  background: var(--flade-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.soejle {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+  transition: width 0.4s ease;
+}
+
+tr.ukendt .soejle {
+  background: var(--graa-maerke);
+}
+
+.tom.lille {
+  min-height: 0;
+  padding-top: 12px;
+}
+
+@media (max-width: 520px) {
+  .fordelingstabel .soejle-kol {
+    display: none;
+  }
+}
+
+/* ---------- Status / tomme tilstande ---------- */
+
+.statuslinje {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--tekst-3);
+}
+
+.prik {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--god);
+  display: inline-block;
+}
+
+.prik.gul {
+  background: #d99a00;
+}
+
+.advarsel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--advarsel-flade);
+  color: var(--advarsel-tekst);
+  border: 1px solid var(--advarsel-kant);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+}
+
+.demo-maerke {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--advarsel-tekst);
+  background: var(--advarsel-flade);
+  border: 1px solid var(--advarsel-kant);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.tom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+  color: var(--tekst-3);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.fuld-besked {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--tekst-2);
+  text-align: center;
+  padding: 24px;
+}
+
+.fuld-besked h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--tekst);
+}
+
+.skelet {
+  background: linear-gradient(90deg, var(--flade-2), var(--kant), var(--flade-2));
+  background-size: 200% 100%;
+  animation: skelet 1.4s ease-in-out infinite;
+  border-radius: 6px;
+  height: 1em;
+}
+
+@keyframes skelet {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skelet {
+    animation: none;
+  }
+}
+
+.skjult {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   STORSKÆRM / KIOSK  (?mode=tv)
+   Alt skaleres med skærmhøjden (1rem ≈ 1,48 % af højden: 16px ved 1080p, 32px ved 2160p).
+   ========================================================================== */
+
+html.tv {
+  font-size: 1.48vh;
+  overflow: hidden;
+}
+
+html.tv body {
+  overflow: hidden;
+  cursor: none;
+}
+
+.tv .side {
+  max-width: none;
+  height: 100vh;
+  padding: 2.2rem 2.8rem 2rem;
+  gap: 1.6rem;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.tv .titel h1 {
+  font-size: 2.6rem;
+}
+
+.tv .titel .undertitel {
+  font-size: 1.5rem;
+  color: var(--tekst-2);
+}
+
+.tv .kort-raekke {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1.4rem;
+}
+
+.tv .kort,
+.tv .panel {
+  padding: 1.6rem 1.9rem;
+  border-radius: 1rem;
+}
+
+.tv .kort-etiket {
+  font-size: 1.35rem;
+  color: var(--tekst-2);
+}
+
+.tv .periode-maerke {
+  font-size: 1.1rem;
+  padding: 0.1rem 0.6rem;
+}
+
+.tv .kort-vaerdi {
+  font-size: 4.6rem;
+  margin-top: 0.9rem;
+  height: 5.3rem;
+}
+
+.tv .kort-detalje {
+  font-size: 1.45rem;
+  margin-top: 0.8rem;
+}
+
+.tv .graf-raekke {
+  gap: 1.4rem;
+  min-height: 0;
+}
+
+.tv .panel-hoved {
+  margin-bottom: 1rem;
+}
+
+.tv .panel-hoved h2 {
+  font-size: 1.8rem;
+}
+
+.tv .panel-hoved .daempet {
+  font-size: 1.35rem;
+}
+
+.tv .graf {
+  height: auto;
+  min-height: 0;
+}
+
+.tv .fordelingstabel {
+  flex: 1;
+}
+
+.tv .soejle-spor {
+  height: 1.6rem;
+  border-radius: 0.3rem;
+}
+
+.tv .fordelingstabel tbody tr td {
+  height: 5.2rem;
+}
+
+/* Periodeafhængige kort markeres med accentkant; perioden står øverst til højre. */
+.tv .kort.periodisk {
+  border-top: 0.3rem solid var(--accent);
+}
+
+.tv .kort .periode-maerke {
+  display: none;
+}
+
+.tv .fordelingstabel {
+  font-size: 1.5rem;
+}
+
+.tv .fordelingstabel th {
+  font-size: 1.1rem;
+}
+
+.tv .fordelingstabel th,
+.tv .fordelingstabel td {
+  padding: 0.75rem 0.3rem;
+}
+
+.tv .statuslinje {
+  font-size: 1.35rem;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.tv .prik {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.tv .advarsel {
+  font-size: 1.35rem;
+  padding: 0.5rem 1rem;
+}
+
+.tv .demo-maerke {
+  font-size: 1rem;
+  padding: 0.2rem 0.6rem;
+}
+
+.tv .fuld-besked h2 {
+  font-size: 3rem;
+}
+
+.tv .fuld-besked p {
+  font-size: 1.8rem;
+}
+
+/* Periodeindikator i tv-visning (ikke klikbar) */
+.tv-perioder {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.tv-perioder span {
+  position: relative;
+  font-size: 1.45rem;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  color: var(--tekst-3);
+  border: 1px solid var(--kant);
+  overflow: hidden;
+}
+
+.tv-perioder span.aktiv {
+  color: var(--paa-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.tv-perioder .fremdrift {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 0.22rem;
+  background: var(--paa-accent);
+  opacity: 0.6;
+  transform-origin: left;
+}
+
+@keyframes fyld {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

@@ -1,0 +1,17 @@
+services:
+  kpi-dashboard:
+    build: .
+    container_name: kpi-dashboard
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      CACHE_DIR: /app/data
+    # Bind kun til serverens LAN-adresse, hvis maskinen også har en offentlig adresse,
+    # fx "192.168.1.10:8080:8080".
+    ports:
+      - "8080:8080"
+    volumes:
+      - kpi-data:/app/data
+
+volumes:
+  kpi-data:
