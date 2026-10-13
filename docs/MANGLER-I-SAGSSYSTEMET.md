@@ -1,6 +1,6 @@
 # Åbne punkter: sagssystem og e-conomic
 
-Dashboardet kører i dag på **demodata**. Før det kan kobles til de rigtige kilder, skal nedenstående afklares.
+Version 1 kører på **manuelt indtastede dagstal** (se README → Morgenrutine). Før det kan kobles til de rigtige kilder, skal nedenstående afklares.
 Sagssystemets kode og databaseskema har endnu ikke været tilgængelige, så listen bygger på, hvad KPI'erne kræver. Den skal opdateres, når skemaet er gennemgået.
 
 ## Det, sagssystemet skal kunne levere

@@ -4,8 +4,12 @@
 export interface Env {
   HOST: string;
   PORT: number;
-  CASE_SOURCE: 'demo' | 'sagssystem';
-  REVENUE_SOURCE: 'demo' | 'economic';
+  CASE_SOURCE: 'demo' | 'manuel' | 'sagssystem';
+  REVENUE_SOURCE: 'demo' | 'manuel' | 'economic';
+  /** Fil med manuelt indtastede dagstal. */
+  MANUEL_FIL: string;
+  /** Valgfri adgangskode til indtastningssiden. Tom = alle på netværket kan taste. */
+  INDTAST_KODE?: string;
   CASE_DB_URL?: string;
   ECONOMIC_APP_SECRET_TOKEN?: string;
   ECONOMIC_AGREEMENT_GRANT_TOKEN?: string;
@@ -39,8 +43,10 @@ export function laesEnv(e: NodeJS.ProcessEnv = process.env): Env {
   return {
     HOST: e.HOST || '0.0.0.0',
     PORT: tal(e.PORT, 8080, 1, 65535, 'PORT'),
-    CASE_SOURCE: valg(e.CASE_SOURCE, ['demo', 'sagssystem'] as const, 'demo', 'CASE_SOURCE'),
-    REVENUE_SOURCE: valg(e.REVENUE_SOURCE, ['demo', 'economic'] as const, 'demo', 'REVENUE_SOURCE'),
+    CASE_SOURCE: valg(e.CASE_SOURCE, ['demo', 'manuel', 'sagssystem'] as const, 'demo', 'CASE_SOURCE'),
+    REVENUE_SOURCE: valg(e.REVENUE_SOURCE, ['demo', 'manuel', 'economic'] as const, 'demo', 'REVENUE_SOURCE'),
+    MANUEL_FIL: e.MANUEL_FIL || './data/manuel.json',
+    INDTAST_KODE: e.INDTAST_KODE || undefined,
     CASE_DB_URL: e.CASE_DB_URL || undefined,
     ECONOMIC_APP_SECRET_TOKEN: e.ECONOMIC_APP_SECRET_TOKEN || undefined,
     ECONOMIC_AGREEMENT_GRANT_TOKEN: e.ECONOMIC_AGREEMENT_GRANT_TOKEN || undefined,

@@ -13,11 +13,11 @@
 //     FROM ...;
 //   + en databasebruger med kun SELECT på rapport_sager.
 //
-// Når mapping er godkendt, implementeres getCases() som én SELECT mod viewet
+// Når mapping er godkendt, implementeres getCaseData() som én SELECT mod viewet
 // via den relevante driver (pg / mysql2 / mssql), og resultatet mappes til `Sag`.
 // Kun de ovenstående kolonner hentes — aldrig navne, CPR eller andre persondata.
 
-import type { Sag } from '../../shared/types.js';
+import type { SagsData } from '../kpi/dashboard.js';
 import type { CaseSource } from './types.js';
 
 export class CaseSystemSource implements CaseSource {
@@ -25,7 +25,7 @@ export class CaseSystemSource implements CaseSource {
 
   constructor(private readonly dsn: string | undefined) {}
 
-  async getCases(): Promise<Sag[]> {
+  async getCaseData(): Promise<SagsData> {
     if (!this.dsn) throw new Error('CASE_DB_URL er ikke sat i .env');
     throw new Error('Sagssystem-forbindelsen er ikke implementeret endnu — afventer godkendt feltmapping');
   }

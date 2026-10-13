@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aendring, beloebStort, dage, dato, forskel, klokken, kr, krKort, pct } from './format.js';
+import { aendring, beloebStort, dage, dato, forskel, klokken, kr, krKort, parseTal, pct } from './format.js';
 
 describe('dansk formatering', () => {
   it('kroner', () => {
@@ -35,5 +35,18 @@ describe('dansk formatering', () => {
     expect(dage(1)).toBe('1 dag');
     expect(dage(12.46)).toBe('12,5 dage');
     expect(dage(0)).toBe('0 dage');
+  });
+  it('læser danske tal fra indtastning', () => {
+    expect(parseTal('1.234,50')).toBe(1234.5);
+    expect(parseTal('1234,5')).toBe(1234.5);
+    expect(parseTal(' 12 500 kr. ')).toBe(12500);
+    expect(parseTal('1.234')).toBe(1234);
+    expect(parseTal('1.234.567')).toBe(1234567);
+    expect(parseTal('99.5')).toBe(99.5);
+    expect(parseTal('-200')).toBe(-200);
+    expect(parseTal('−1.500,25')).toBe(-1500.25);
+    expect(parseTal('')).toBeNull();
+    expect(parseTal('abc')).toBeNaN();
+    expect(parseTal('1,2,3')).toBeNaN();
   });
 });

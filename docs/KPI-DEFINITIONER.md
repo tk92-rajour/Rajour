@@ -100,3 +100,20 @@ Realiseret omsætning pr. ISO-uge for de seneste 12 uger (`ugerITrend`). Den ind
 | Periodeskift på storskærm | hvert 30. sek. (0 = fra) | `TV_ROTATION_SECONDS` |
 
 Fejler en kilde, beholdes de sidst kendte data, og der vises en diskret advarsel. De beregnede (aggregerede) tal gemmes desuden på disk, så de overlever en genstart.
+
+## Version 1: manuel indtastning
+
+Når `CASE_SOURCE=manuel` / `REVENUE_SOURCE=manuel`, beregnes KPI'erne ud fra én indtastning pr. dag i stedet for enkeltsager og fakturaer. Definitionerne er de samme, men grundlaget er dagstal:
+
+| KPI | Beregning ud fra dagstal |
+|---|---|
+| Referencetidspunkt | Slutningen af **seneste indtastede dag** (typisk i går). "Dag/uge/måned" og "forrige periode" regnes fra dette tidspunkt, ikke fra klokken nu. Dag = seneste indtastede dag. Uge og måned = til og med den dag. |
+| 1. Åbne sager | Seneste indtastede værdi. Står feltet tomt en dag, bruges forrige værdi. |
+| 2. Lukket i ugen | Sum af "sager lukket denne dag" i ISO-ugen, sammenlignet med ugen før til samme ugedag. |
+| 3. Pipeline | Seneste indtastede beløb. Antal sager = åbne sager. Der bruges ingen fallback pr. sagstype. |
+| 4. Omsætning | Sum af indtastet salær pr. dag, som tæller på den dato, der er tastet for. Negative beløb (kreditnotaer) trækkes fra. |
+| 5. Behandlingstid | Gennemsnit og median af alle indtastede behandlingstider (dage pr. lukket sag) i perioden. Dage uden angivne behandlingstider indgår ikke. |
+| 6. Fordeling | Salær pr. sagstype som tastet. |
+
+Validering: datoen må ikke ligge i fremtiden. Antal skal være hele tal ≥ 0, og pipeline ≥ 0. Omsætning må være negativ. Er behandlingstider udfyldt, skal der være én pr. lukket sag.
+

@@ -1,9 +1,10 @@
 import { kr, pct } from '../../../shared/format';
-import { PERIODE_NAVN, SAGSTYPE_NAVN, type PeriodeKpi } from '../../../shared/types';
+import { SAGSTYPE_NAVN, type PeriodeKpi } from '../../../shared/types';
 
 interface Props {
   kpi: PeriodeKpi;
   tv: boolean;
+  periodeNavn: string;
 }
 
 /**
@@ -11,7 +12,7 @@ interface Props {
  * hver række har en vandret søjle (længde ∝ beløb), beløb og andel i %.
  * Sagstypen står kun ét sted, så den er læsbar på afstand.
  */
-export function FordelingPanel({ kpi, tv }: Props) {
+export function FordelingPanel({ kpi, tv, periodeNavn }: Props) {
   const raekker = kpi.fordeling;
   const total = raekker.reduce((a, r) => a + r.beloeb, 0);
   const max = Math.max(0, ...raekker.map((r) => r.beloeb));
@@ -21,7 +22,7 @@ export function FordelingPanel({ kpi, tv }: Props) {
     <section className="panel" aria-labelledby="fordeling-titel">
       <div className="panel-hoved">
         <h2 id="fordeling-titel">Omsætning pr. sagstype</h2>
-        <span className="daempet">{PERIODE_NAVN[kpi.periode]}</span>
+        <span className="daempet">{periodeNavn}</span>
       </div>
       <table className="fordelingstabel tal-tabel">
         <thead>

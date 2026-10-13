@@ -749,3 +749,242 @@ html.tv body {
     transform: scaleX(1);
   }
 }
+
+/* ==========================================================================
+   Indtastning (/indtast)
+   ========================================================================== */
+
+.knap.primaer {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paa-accent);
+}
+
+.knap.primaer:hover {
+  color: var(--paa-accent);
+  filter: brightness(1.08);
+}
+
+.knap:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.indtast-gitter {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1000px) {
+  .indtast-gitter {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formular {
+  gap: 20px;
+}
+
+.formular fieldset {
+  border: 0;
+  border-top: 1px solid var(--kant);
+  margin: 0;
+  padding: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formular legend {
+  font-weight: 620;
+  font-size: 1rem;
+  padding: 0 0 4px;
+  float: left;
+  width: 100%;
+}
+
+.felt-raekke {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.felt-raekke.fire {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 560px) {
+  .felt-raekke,
+  .felt-raekke.fire {
+    grid-template-columns: 1fr;
+  }
+}
+
+.felt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.felt-navn {
+  font-size: 0.875rem;
+  font-weight: 560;
+  color: var(--tekst);
+}
+
+.valgfri {
+  font-weight: 400;
+  color: var(--tekst-3);
+}
+
+.felt-hjaelp {
+  font-size: 0.8rem;
+  color: var(--tekst-3);
+}
+
+.felt-hjaelp.blok {
+  margin: 0;
+}
+
+.felt-fejl {
+  font-size: 0.8rem;
+  font-weight: 560;
+  color: var(--daarlig);
+}
+
+.felt input {
+  font: inherit;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--tekst);
+  background: var(--flade);
+  border: 1px solid var(--kant);
+  border-radius: 8px;
+  padding: 9px 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+.felt input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+
+.felt input[aria-invalid='true'] {
+  border-color: var(--daarlig);
+}
+
+.med-enhed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.med-enhed input {
+  text-align: right;
+}
+
+.med-enhed > span {
+  color: var(--tekst-3);
+  font-size: 0.9rem;
+}
+
+.sum {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  align-items: baseline;
+  color: var(--tekst-2);
+  font-size: 0.95rem;
+}
+
+.sum strong {
+  color: var(--tekst);
+  font-size: 1.1rem;
+}
+
+.formular-bund {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--kant);
+  padding-top: 16px;
+}
+
+.formular-bund .knap {
+  padding: 10px 22px;
+  font-size: 1rem;
+}
+
+.besked {
+  font-size: 0.9rem;
+  font-weight: 560;
+}
+
+.besked.ok {
+  color: var(--god);
+}
+
+.besked.fejl {
+  color: var(--daarlig);
+}
+
+.mangler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.chip {
+  border: 1px solid var(--advarsel-kant);
+  background: var(--advarsel-flade);
+  color: var(--advarsel-tekst);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.historik tr.valgt td {
+  background: var(--accent-flade);
+}
+
+.handlinger-celle {
+  white-space: nowrap;
+}
+
+.link-knap {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 0.85rem;
+  font-weight: 560;
+}
+
+.link-knap:hover {
+  text-decoration: underline;
+}
+
+.link-knap.fare {
+  color: var(--daarlig);
+}
+
+.link-knap:focus-visible,
+.chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+.historik .fordelingstabel td:first-child {
+  white-space: nowrap;
+}

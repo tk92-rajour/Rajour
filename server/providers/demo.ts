@@ -4,6 +4,7 @@
 
 import { addDays, isWeekend, setHours, setMinutes, startOfDay, subMonths } from 'date-fns';
 import type { Omsaetningspost, Sag, Sagstype } from '../../shared/types.js';
+import type { SagsData } from '../kpi/dashboard.js';
 import type { CaseSource, RevenueSource } from './types.js';
 
 /** Mulberry32 — lille, hurtig, deterministisk PRNG. */
@@ -184,10 +185,10 @@ export class DemoSource implements CaseSource, RevenueSource {
     return this.cache.data;
   }
 
-  async getCases(): Promise<Sag[]> {
+  async getCaseData(): Promise<SagsData> {
     // Filtrér på nu, så sager "lukket senere i dag" ikke vises før tid.
     const nu = new Date();
-    return this.data().sager.filter((s) => s.oprettet <= nu);
+    return { art: 'sager', sager: this.data().sager.filter((s) => s.oprettet <= nu) };
   }
 
   async getRevenueEntries(fra: Date, til: Date): Promise<Omsaetningspost[]> {

@@ -33,6 +33,27 @@ export interface Omsaetningspost {
   sagstype: SagstypeEllerUkendt;
 }
 
+/**
+ * Én dags manuelt indtastede tal (aggregeret — ingen sagsdetaljer).
+ * Datoen er den dag, tallene gælder for (typisk i går, indtastet næste morgen).
+ */
+export interface Dagsregistrering {
+  /** YYYY-MM-DD */
+  dato: string;
+  /** Antal åbne sager ved dagens slutning. null = ikke angivet (forrige værdi bruges). */
+  aabneSager: number | null;
+  /** Forventet salær i åbne sager ved dagens slutning, kr. ekskl. moms. null = ikke angivet. */
+  pipeline: number | null;
+  /** Antal sager lukket denne dag. */
+  lukkedeSager: number;
+  /** Behandlingstid i dage for hver lukket sag (valgfri; hvis udfyldt, én værdi pr. lukket sag). */
+  behandlingsdage: number[];
+  /** Salær faktureret denne dag pr. sagstype, kr. ekskl. moms. Negativ ved kreditnota. */
+  omsaetning: Record<Sagstype, number>;
+  /** ISO-tidspunkt for seneste ændring. */
+  opdateret?: string;
+}
+
 export type Periode = 'dag' | 'uge' | 'maaned';
 export const PERIODER: Periode[] = ['dag', 'uge', 'maaned'];
 
@@ -112,4 +133,17 @@ export interface DashboardData {
     omsaetningsgrundlag: 'fakturadato' | 'betalingsdato';
   };
   demo: boolean;
+  /**
+   * Det tidspunkt, tallene er beregnet "til og med". Ved live-data = nu.
+   * Ved manuel indtastning = slutningen af seneste indtastede dag (typisk i går).
+   */
+  referencetid: string;
+  /** Kun ved manuel indtastning. */
+  manuel: { senesteDato: string | null; antalDage: number } | null;
+}
+
+/** Svar fra GET /api/manuel */
+export interface ManuelListe {
+  registreringer: Dagsregistrering[];
+  kodeKraevet: boolean;
 }

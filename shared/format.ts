@@ -82,3 +82,32 @@ export function dage(n: number): string {
   const s = tal(n, dec);
   return `${s} ${s === '1' ? 'dag' : 'dage'}`;
 }
+
+/**
+ * Læser et tal skrevet på dansk: "1.234,50" → 1234.5, "1234,5" → 1234.5, "-200" → −200.
+ * Accepterer også "1234.50" (punktum som decimaltegn), når det ikke ligner tusindtalsseparator.
+ * Tom streng → null. Ugyldigt → NaN.
+ */
+export function parseTal(input: string): number | null {
+  let s = input.trim().replace(/\s|kr\.?$/gi, '').replace(/[−–]/g, '-');
+  if (s === '') return null;
+  if (s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) {
+    s = s.replace(/\./g, ''); // "1.234" / "1.234.567" = tusinder
+  }
+  return /^-?\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+}
+
+/** Lokal dato → 'YYYY-MM-DD'. */
+export function isoDato(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** Seneste hverdag før `nu` som 'YYYY-MM-DD' (mandag → fredag). Helligdage tages ikke i betragtning. */
+export function forrigeHverdag(nu = new Date()): string {
+  const d = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate() - 1);
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+  return isoDato(d);
+}

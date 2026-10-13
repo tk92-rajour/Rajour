@@ -17,13 +17,24 @@ const webDir = path.resolve(here, here.endsWith(path.join('dist', 'server')) ? '
 
 const provider = opretProvider(env);
 let opdatering: Opdatering | undefined;
-const app = byggApp(env, () => opdatering?.hent() ?? null, webDir);
+const app = byggApp(
+  env,
+  () => opdatering?.hent() ?? null,
+  webDir,
+  provider.manuel
+    ? { lager: provider.manuel, kode: env.INDTAST_KODE, efterAendring: () => void opdatering?.koer() }
+    : undefined,
+);
 opdatering = new Opdatering(provider, kpiConfig, env, app.log);
 
 app.log.info(
   { sager: provider.sager.navn, omsaetning: provider.omsaetning.navn, opdateringSek: env.REFRESH_SECONDS, lanOnly: env.LAN_ONLY },
   'Starter KPI-dashboard',
 );
+
+if (provider.manuel && !env.INDTAST_KODE) {
+  app.log.warn('INDTAST_KODE er ikke sat — alle på det interne netværk kan indtaste tal');
+}
 
 await opdatering.start();
 await app.listen({ host: env.HOST, port: env.PORT });

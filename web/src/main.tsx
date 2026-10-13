@@ -7,6 +7,7 @@ import '@fontsource/inter/latin-600.css';
 import '@fontsource/inter/latin-700.css';
 import './styles.css';
 import { App, TV } from './App';
+import { Indtastning } from './Indtastning';
 
 if (TV) {
   document.documentElement.classList.add('tv');
@@ -16,6 +17,6 @@ if (TV) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {location.pathname.replace(/\/$/, '') === '/indtast' ? <Indtastning /> : <App />}
   </StrictMode>,
 );

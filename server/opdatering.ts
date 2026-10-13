@@ -5,10 +5,11 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { addDays, startOfDay, startOfISOWeek, startOfMonth, subMonths, subWeeks } from 'date-fns';
-import type { DashboardData, KildeStatus, Omsaetningspost, Sag } from '../shared/types.js';
+import type { DashboardData, KildeStatus, Omsaetningspost } from '../shared/types.js';
 import type { KpiConfig } from '../config/kpi.config.js';
 import type { DataProvider } from './providers/types.js';
-import { beregnDashboard } from './kpi/dashboard.js';
+import { beregnDashboard, type SagsData } from './kpi/dashboard.js';
+import { referencetidFraDage } from './kpi/dage.js';
 import type { Env } from './env.js';
 
 interface Logger {
@@ -39,11 +40,12 @@ export function omsaetningsVindue(nu: Date, ugerITrend: number): { fra: Date; ti
 }
 
 export class Opdatering {
-  private sager = nyKilde<Sag[]>('');
+  private sager = nyKilde<SagsData>('');
   private omsaetning = nyKilde<Omsaetningspost[]>('');
   private seneste: DashboardData | null = null;
   private timer: NodeJS.Timeout | null = null;
   private koerer = false;
+  private koerIgen = false;
 
   constructor(
     private readonly provider: DataProvider,
@@ -84,32 +86,57 @@ export class Opdatering {
     }
   }
 
-  /** Én opdateringsrunde. Kaster aldrig. */
-  async koer(nu = new Date()): Promise<void> {
-    if (this.koerer) return; // forrige runde er ikke færdig (fx langsomt API) — spring over
+  /**
+   * Én opdateringsrunde. Kaster aldrig.
+   * Kaldes også straks efter en manuel indtastning; kører en runde allerede, køres en ny bagefter.
+   */
+  async koer(nu?: Date): Promise<void> {
+    if (this.koerer) {
+      this.koerIgen = true;
+      return;
+    }
     this.koerer = true;
     try {
-      const vindue = omsaetningsVindue(nu, this.cfg.ugerITrend);
-      await Promise.all([
-        this.hentKilde(this.sager, () => this.provider.sager.getCases()),
-        this.hentKilde(this.omsaetning, () => this.provider.omsaetning.getRevenueEntries(vindue.fra, vindue.til)),
-      ]);
-
-      const kilder = [this.sager.status, this.omsaetning.status];
-      if (this.sager.data && this.omsaetning.data) {
-        const kpi = beregnDashboard(this.sager.data, this.omsaetning.data, nu, this.cfg);
-        this.seneste = { ...kpi, beregnet: nu.toISOString(), kilder, visning: this.visning(), demo: this.provider.demo };
-        await this.gemTilDisk(this.seneste);
-        this.log.info(
-          { aabneSager: kpi.aabneSager, sager: this.sager.data.length, poster: this.omsaetning.data.length },
-          'KPI opdateret',
-        );
-      } else if (this.seneste) {
-        // Ingen rådata endnu (fx genstart mens kilden er nede) — vis tal fra disk med opdateret kildestatus.
-        this.seneste = { ...this.seneste, kilder };
+      await this.enRunde(nu ?? new Date());
+      while (this.koerIgen) {
+        this.koerIgen = false;
+        await this.enRunde(new Date());
       }
     } finally {
       this.koerer = false;
+    }
+  }
+
+  private async enRunde(nu: Date): Promise<void> {
+    // Ved manuel indtastning regnes "til og med" seneste indtastede dag (typisk i går).
+    const manuelleDage = this.provider.manuel ? await this.provider.manuel.alle().catch(() => null) : null;
+    const ref = manuelleDage ? referencetidFraDage(manuelleDage, nu) : nu;
+
+    const vindue = omsaetningsVindue(ref, this.cfg.ugerITrend);
+    await Promise.all([
+      this.hentKilde(this.sager, () => this.provider.sager.getCaseData()),
+      this.hentKilde(this.omsaetning, () => this.provider.omsaetning.getRevenueEntries(vindue.fra, vindue.til)),
+    ]);
+
+    const kilder = [this.sager.status, this.omsaetning.status];
+    if (this.sager.data && this.omsaetning.data) {
+      const kpi = beregnDashboard(this.sager.data, this.omsaetning.data, ref, this.cfg);
+      this.seneste = {
+        ...kpi,
+        beregnet: nu.toISOString(),
+        referencetid: ref.toISOString(),
+        kilder,
+        visning: this.visning(),
+        demo: this.provider.demo,
+        manuel: manuelleDage
+          ? { senesteDato: manuelleDage.at(-1)?.dato ?? null, antalDage: manuelleDage.length }
+          : null,
+      };
+      await this.gemTilDisk(this.seneste);
+      this.log.info({ aabneSager: kpi.aabneSager, poster: this.omsaetning.data.length }, 'KPI opdateret');
+    } else if (this.seneste) {
+      // Ingen rådata endnu (fx genstart mens kilden er nede) — vis tal fra disk med opdateret kildestatus.
+      this.seneste = { ...this.seneste, kilder };
     }
   }
 
@@ -138,7 +165,7 @@ export class Opdatering {
     try {
       const d = JSON.parse(await readFile(this.cacheFil, 'utf8')) as DashboardData;
       // Nyeste visningsindstillinger fra .env vinder over den gemte kopi.
-      this.seneste = { ...d, visning: this.visning() };
+      this.seneste = { ...d, referencetid: d.referencetid ?? d.beregnet, manuel: d.manuel ?? null, visning: this.visning() };
       this.log.info({ beregnet: d.beregnet }, 'Indlæste sidst kendte tal fra disk');
     } catch {
       /* ingen cache endnu */

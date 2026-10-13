@@ -1,4 +1,4 @@
-import { klokken } from '../../../shared/format';
+import { dato, forrigeHverdag, klokken, ugedag } from '../../../shared/format';
 import type { DashboardData } from '../../../shared/types';
 
 interface Props {
@@ -18,6 +18,15 @@ export function advarsler({ data, hentFejl, nu }: Props): string[] {
       ud.push(
         `${k.navn} er utilgængelig${k.sidstOk ? ` – sidst hentet kl. ${klokken(k.sidstOk)}` : ''}`,
       );
+    }
+  }
+  if (data.manuel) {
+    // Tallene tastes om morgenen for i går: advar, hvis seneste hverdag mangler.
+    const s = data.manuel.senesteDato;
+    if (!s) ud.push('Der er ikke indtastet nogen tal endnu');
+    else if (s < forrigeHverdag(nu)) {
+      const d = new Date(`${s}T12:00:00`);
+      ud.push(`Seneste indtastede tal er for ${ugedag(d)} ${dato(d)}`);
     }
   }
   if (!hentFejl && minGammel > data.visning.foraeldetEfterMin) {
@@ -43,7 +52,16 @@ export function Statuslinje(props: Props) {
       ) : (
         <span className="prik" aria-hidden="true" />
       )}
-      <span>Sidst opdateret kl. {klokken(props.data.beregnet)}</span>
+      {props.data.manuel?.senesteDato ? (
+        <span>Tal til og med {senesteTekst(props.data.manuel.senesteDato)}</span>
+      ) : (
+        <span>Sidst opdateret kl. {klokken(props.data.beregnet)}</span>
+      )}
     </div>
   );
+}
+
+function senesteTekst(s: string): string {
+  const d = new Date(`${s}T12:00:00`);
+  return `${ugedag(d)} ${dato(d)}`;
 }

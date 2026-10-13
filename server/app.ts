@@ -1,12 +1,36 @@
 import { existsSync } from 'node:fs';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import path from 'node:path';
-import Fastify, { LogController, type FastifyInstance } from 'fastify';
+import Fastify, { LogController, type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import type { Env } from './env.js';
-import type { DashboardData } from '../shared/types.js';
+import type { DashboardData, ManuelListe } from '../shared/types.js';
 import { erPrivatIp } from './lan.js';
+import type { ManuelLager } from './providers/manuel.js';
+import { erGyldigDato, validerRegistrering } from './manuel/valider.js';
+import { isoFraDato } from './kpi/dage.js';
 
-export function byggApp(env: Env, hentData: () => DashboardData | null, webDir: string): FastifyInstance {
+export interface ManuelOpsaetning {
+  lager: ManuelLager;
+  /** Valgfri adgangskode til at gemme/slette. */
+  kode?: string;
+  /** Kaldes efter hver ændring, så dashboardet opdateres med det samme. */
+  efterAendring: () => void;
+}
+
+/** Sammenligner koder uden at lække længde/indhold via svartid. */
+function kodeOk(givet: unknown, forventet: string): boolean {
+  if (typeof givet !== 'string') return false;
+  const h = (s: string) => createHash('sha256').update(s).digest();
+  return timingSafeEqual(h(givet), h(forventet));
+}
+
+export function byggApp(
+  env: Env,
+  hentData: () => DashboardData | null,
+  webDir: string,
+  manuel?: ManuelOpsaetning,
+): FastifyInstance {
   const app = Fastify({
     // Ingen request-logning (IP-adresser/URL'er er unødvendige og kan være persondata).
     logController: new LogController({ disableRequestLogging: true }),
@@ -37,6 +61,40 @@ export function byggApp(env: Env, hentData: () => DashboardData | null, webDir: 
     if (!data) return reply.code(503).send({ fejl: 'Data er ikke klar endnu' });
     return data;
   });
+
+  if (manuel) {
+    const { lager, kode, efterAendring } = manuel;
+
+    app.get('/api/manuel', async (_req, reply): Promise<ManuelListe> => {
+      reply.header('Cache-Control', 'no-store');
+      return { registreringer: await lager.alle(), kodeKraevet: !!kode };
+    });
+
+    const tjekKode = async (req: FastifyRequest, reply: FastifyReply) => {
+      if (kode && !kodeOk(req.headers['x-indtast-kode'], kode)) {
+        return reply.code(401).send({ fejl: 'Forkert eller manglende kode' });
+      }
+    };
+
+    app.put<{ Params: { dato: string } }>('/api/manuel/:dato', { preHandler: tjekKode }, async (req, reply) => {
+      const body = req.body && typeof req.body === 'object' ? (req.body as Record<string, unknown>) : null;
+      if (!body) return reply.code(400).send({ fejl: 'Ugyldige data' });
+      const v = validerRegistrering({ ...body, dato: req.params.dato }, isoFraDato(new Date()));
+      if (!v.ok) return reply.code(422).send({ fejl: 'Tjek de markerede felter', felter: v.fejl });
+      const gemt = await lager.gemRegistrering(v.vaerdi);
+      req.log.info({ dato: gemt.dato }, 'Dagstal gemt');
+      efterAendring();
+      return { registrering: gemt };
+    });
+
+    app.delete<{ Params: { dato: string } }>('/api/manuel/:dato', { preHandler: tjekKode }, async (req, reply) => {
+      if (!erGyldigDato(req.params.dato)) return reply.code(400).send({ fejl: 'Ugyldig dato' });
+      if (!(await lager.slet(req.params.dato))) return reply.code(404).send({ fejl: 'Ingen tal for den dato' });
+      req.log.info({ dato: req.params.dato }, 'Dagstal slettet');
+      efterAendring();
+      return reply.code(204).send();
+    });
+  }
 
   app.get('/api/health', async () => {
     const d = hentData();

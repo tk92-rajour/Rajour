@@ -7,9 +7,11 @@ Det viser **kun aggregerede tal**: ingen navne, CPR-numre, sags- eller fakturanu
 |---|---|
 | Laptop (interaktiv) | `http://<server>:8080/` |
 | Storskærm / kiosk | `http://<server>:8080/?mode=tv` |
+| Indtastning af dagens tal | `http://<server>:8080/indtast` |
 
-> **Status:** Kører på **demodata** (ca. 300 genererede sager over 12 måneder). Det står med et gult "DEMODATA"-mærke på skærmen.
-> Kobling til sagssystem og e-conomic afventer godkendt feltmapping. Se [docs/MANGLER-I-SAGSSYSTEMET.md](docs/MANGLER-I-SAGSSYSTEMET.md).
+> **Status – version 1:** Tallene **tastes ind manuelt hver morgen** på `/indtast` (se [Morgenrutine](#morgenrutine)).
+> Uden `.env` kører den på **demodata** med et gult "DEMODATA"-mærke.
+> Automatisk kobling til sagssystem og e-conomic afventer godkendt feltmapping. Se [docs/MANGLER-I-SAGSSYSTEMET.md](docs/MANGLER-I-SAGSSYSTEMET.md).
 
 ![Storskærm](docs/billeder/storskaerm.png)
 
@@ -19,6 +21,34 @@ Det viser **kun aggregerede tal**: ingen navne, CPR-numre, sags- eller fakturanu
 - **Storskærm:** mørkt tema og stor tekst, alt på én skærm uden scroll (1920×1080 og 3840×2160). Skifter automatisk mellem dag, uge og måned og opdaterer uden flimmer.
 - **Robust:** fejler en kilde, vises de sidst kendte tal med en diskret advarsel. Ældre end 15 min. markeres også.
 
+## Morgenrutine
+
+Hver morgen (ca. 2 minutter):
+
+![Indtastning](docs/billeder/indtastning.png)
+
+1. Åbn `http://<server>:8080/indtast`, eller klik **Indtast tal** på dashboardet.
+2. Datoen står allerede på **forrige hverdag**. Om mandagen er det fredag.
+3. Udfyld felterne:
+
+| Felt | Hvad skal der stå | Hvor finder jeg det |
+|---|---|---|
+| Åbne sager ved dagens slutning | Antal sager, der ikke er lukket | Sagssystemet. Forudfyldes med forrige værdi. |
+| Pipeline | Forventet salær i alle åbne sager, kr. ekskl. moms | Sagssystemet/eget skøn. Forudfyldes med forrige værdi. |
+| Sager lukket denne dag | Antal | Sagssystemet |
+| Behandlingstid *(valgfri)* | Dage fra oprettelse til lukning for **hver** lukket sag, fx `12, 45, 3` | Sagssystemet. Uden den vises behandlingstid som "–". |
+| Omsætning pr. sagstype | **Salær** faktureret den dag, ekskl. moms. **Ikke** hovedstol. Kreditnota = minus. | e-conomic, fakturaer for dagen |
+
+4. Tryk **Gem tal**. Dashboardet og storskærmen opdateres inden for et minut.
+
+Godt at vide:
+- **Tal skrives på dansk:** `1.250.000` eller `3.250,50`. "kr." og mellemrum ignoreres.
+- **Ret eller slet:** tidligere dage rettes eller slettes i listen til højre. Glemte hverdage vises som gule knapper.
+- **Dashboardet viser "til og med" seneste indtastede dag.** Periodeknapperne hedder derfor fx **Man. 12. okt. / Uge 42 / Oktober** i stedet for "I dag". Mangler gårsdagens tal, vises en gul advarsel.
+- **Weekender og helligdage** kan springes over. Der tælles kun de dage, der er tastet.
+- **Backup:** tallene ligger i `data/manuel.json`, og forrige version gemmes automatisk som `manuel.json.bak`. Tag jævnligt backup af mappen `data/`. Ved Docker ligger den i volumen `kpi-data`.
+- **Kode:** sæt `INDTAST_KODE` i `.env`, så kun dem, der kender koden, kan ændre tallene. Dashboardet kan stadig ses af alle på netværket.
+
 ## Arkitektur
 
 ```
@@ -27,6 +57,7 @@ shared/                   ← fælles typer + dansk formatering
 server/
   providers/              ← datalag: DataProvider = CaseSource + RevenueSource
     demo.ts               ←   demodata
+    manuel.ts             ←   manuel indtastning (data/manuel.json)
     sagssystem.ts         ←   sagssystem (read-only) — afventer mapping
     economic.ts           ←   e-conomic REST API (read-only) — afventer mapping
   kpi/                    ← rene, enhedstestede KPI-beregninger
@@ -38,7 +69,7 @@ deploy/                   ← systemd-enhed
 ```
 
 - **Credentials** (e-conomic-tokens, database-URL) ligger kun i `.env` på serveren og sendes aldrig til browseren eller til loggen.
-- **Datakilde vælges** med `CASE_SOURCE` (`demo` | `sagssystem`) og `REVENUE_SOURCE` (`demo` | `economic`).
+- **Datakilde vælges** med `CASE_SOURCE` (`manuel` | `demo` | `sagssystem`) og `REVENUE_SOURCE` (`manuel` | `demo` | `economic`). Kilderne kan blandes, fx manuelle sagstal + omsætning fra e-conomic, når den er klar.
 - **e-conomic:** bogførte fakturaer hentes kun én gang, fordi de ikke kan ændres. Ved hver opdatering hentes kun listen over nye. Ved rate limit (HTTP 429) ventes der med `Retry-After`.
 
 ## Krav
@@ -125,6 +156,7 @@ URL-parametre til storskærmen:
 
 ## Sikkerhed og persondata
 
+- **Manuel indtastning** gemmer kun aggregerede tal (antal og beløb). Der må **ikke** skrives navne eller sagsnumre i felterne, og felterne tillader kun tal.
 - **Kun aggregerede tal.** API'et (`/api/dashboard`) returnerer ingen sags-id'er, navne, CPR-numre, sags- eller fakturanumre. Det er dækket af en test.
 - **Ingen persondata i loggen.** Request-logning er slået fra, og loggen indeholder kun antal og fejltyper.
 - **Kun internt netværk.** Med `LAN_ONLY=true` (standard) afvises forespørgsler fra offentlige IP-adresser (HTTP 403). Lav **ikke** port-forwarding i routeren, og bind evt. kun til LAN-adressen (`HOST=192.168.1.10`).

@@ -75,7 +75,8 @@ describe('opdatering', () => {
     let fejl = false;
     const provider: DataProvider = {
       demo: false,
-      sager: { navn: 'Test', getCases: async () => (fejl ? Promise.reject(new Error('timeout')) : [sag]) },
+      manuel: null,
+      sager: { navn: 'Test', getCaseData: async () => (fejl ? Promise.reject(new Error('timeout')) : { art: 'sager', sager: [sag] }) },
       omsaetning: { navn: 'Test', getRevenueEntries: async () => [post] },
     };
     const o = new Opdatering(provider, kpiConfig, env, stille);
@@ -94,7 +95,8 @@ describe('opdatering', () => {
   it('svaret indeholder ingen sags-id\'er eller persondata', async () => {
     const provider: DataProvider = {
       demo: false,
-      sager: { navn: 'Test', getCases: async () => [{ ...sag, id: 'HEMMELIG-SAG-123' }] },
+      manuel: null,
+      sager: { navn: 'Test', getCaseData: async () => ({ art: 'sager', sager: [{ ...sag, id: 'HEMMELIG-SAG-123' }] }) },
       omsaetning: { navn: 'Test', getRevenueEntries: async () => [post] },
     };
     const o = new Opdatering(provider, kpiConfig, env, stille);
